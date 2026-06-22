@@ -3,7 +3,7 @@
 *From requirement to defensible solution — across Directory Services, Access Management, IGA, PAM, EPM, PKI and Identity Proofing, plus the cross-cutting CIAM and ISPM/ITDR/CIEM.*
 
 > ### ▶ Live learning portal
-> \*\*\[https://krishnaninfosec.github.io/IAMSA.MasteryCourse/](https://krishnaninfosec.github.io/IAMSA.MasteryCourse/)\*\*
+> \*\*\https://krishnaninfosec.github.io/IAMSA.MasteryCourse/\*\*
 >
 > The portal is a self-contained learning system: the module-by-module course, \*\*active-recall flashcards with spaced repetition\*\*, quick self-checks, progress tracking and a fast-reference section. Your progress and review schedule are saved in your browser.
 
