@@ -13,7 +13,6 @@
 
 * [What this is](#what-this-is)
 * [How the program works](#how-the-program-works)
-* [Time commitment](#time-commitment)
 * [The module syllabus](#the-module-syllabus)
 * [How each module is taught (the template)](#how-each-module-is-taught-the-template)
 * [Module 0 — Foundations](#module-0--foundations)
@@ -26,8 +25,8 @@
 * [Licensing \& commercials primer](#licensing--commercials-primer)
 * [The retention system](#the-retention-system)
 * [Glossary](#glossary)
-* [Repository structure](#repository-structure)
 * [Sources](#sources)
+* [Repository structure](#repository-structure)
 
 \---
 
@@ -56,19 +55,7 @@ Navigation cues used during sessions: **`next`** to continue · **`go deeper`** 
 
 \---
 
-## Time commitment
 
-Roughly **75–80 hours** of focused learning across **fourteen modules**. Calendar duration depends on pace:
-
-|Pace|Hours / week|Calendar duration|Best when|
-|-|-|-|-|
-|Light|\~3 hrs|\~26–28 weeks|Heavy delivery season; protect against burnout|
-|**Steady (recommended)**|**\~4 hrs**|**\~18–19 weeks**|**Sustainable alongside client work**|
-|Intensive|\~6–7 hrs|\~12–13 weeks|Dedicated upskilling window before a bid|
-
-**Recommended cadence:** three short weekday sessions (30–40 min, one sub-topic each) plus one \~90-minute weekend consolidation block that produces the module's reusable artefacts.
-
-\---
 
 ## The module syllabus
 
