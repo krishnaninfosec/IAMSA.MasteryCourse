@@ -56,14 +56,15 @@ button{font-family:var(--sans);cursor:pointer}
 body.resizing{user-select:none;cursor:col-resize}
 body.resizing *{cursor:col-resize!important}
 .nav-sec{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:16px 10px 7px}
-.nav-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:none;
-  padding:8px 10px;border-radius:8px;color:var(--ink-soft);font-size:13.5px}
+.nav-item{display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;border:0;background:none;
+  padding:8px 10px;border-radius:8px;color:var(--ink-soft);font-size:13.5px;line-height:1.32}
 .nav-item:hover{background:var(--surface-2)}
 .nav-item.active{background:#fff;color:var(--ink);box-shadow:var(--shadow);font-weight:500}
-.nav-item .code{font-family:var(--mono);font-size:10.5px;color:var(--muted);min-width:30px}
+.nav-item .code{font-family:var(--mono);font-size:10.5px;color:var(--muted);flex:0 0 auto;min-width:30px;padding-top:2px}
 .nav-item.active .code{color:var(--blue)}
-.nav-item .tick{margin-left:auto;font-size:11px;color:var(--green)}
-.nav-item .lock{margin-left:auto;font-size:11px;color:var(--muted)}
+.nav-item .t{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+.nav-item .tick{flex:0 0 auto;margin-left:auto;padding-left:6px;font-size:11px;color:var(--green);padding-top:2px}
+.nav-item .lock{flex:0 0 auto;margin-left:auto;padding-left:6px;font-size:11px;color:var(--muted);padding-top:2px}
 
 .content{flex:1 1 auto;min-width:0;padding:34px 40px 90px;max-width:880px}
 .lens{background:#eef4fb;border:1px solid #cfe0f1;border-left:4px solid var(--blue);border-radius:8px;padding:11px 14px;margin:12px 0 6px;font-size:14px;color:#234763;line-height:1.55}
@@ -73,6 +74,9 @@ body.resizing *{cursor:col-resize!important}
 .reflect{background:var(--amber-fill);border:1px solid var(--amber-line);border-radius:10px;padding:16px 18px;margin:22px 0 6px}
 .reflect .lens-h{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:5px}
 .reflect p{margin:0;color:#6c4710;font-size:14.5px}
+.dgm{margin:14px 0 8px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 14px 10px}
+.dgm svg{display:block;width:100%;height:auto}
+.dgm .cap{font-size:12.5px;color:var(--muted);margin-top:10px;text-align:center;line-height:1.45}
 .section-fade{animation:fade .35s ease}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
@@ -226,6 +230,51 @@ const DAY=864e5, today=()=>{const d=new Date();d.setHours(0,0,0,0);return d.getT
 const INTERVALS=[0,1,3,7,16,35]; // by Leitner box
 
 /* ---------- course data ---------- */
+/* ---------- diagram builders (self-contained, theme-coloured SVG) ---------- */
+function svgTowers(){
+  const steps=[
+    ["1","Identity Proofing","Verify the real person at enrolment"],
+    ["2","Directory Services","Create the authoritative identity record (the foundation)"],
+    ["3","IGA","Provision birthright access for the role"],
+    ["4","Access Management","Log in each day with SSO and MFA"],
+    ["5","PAM","Elevate to admin just-in-time when needed"],
+    ["6","PKI","Devices and services authenticate with certificates"],
+  ];
+  const ys=[60,116,172,228,284,340];
+  let nodes="";
+  steps.forEach((s,i)=>{const y=ys[i];
+    nodes+=`<circle cx="44" cy="${y}" r="15" fill="#1F3864"/>`
+      +`<text x="44" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="#ffffff">${s[0]}</text>`
+      +`<text x="74" y="${y-3}" font-size="14" font-weight="600" fill="#15233B">${s[1]}</text>`
+      +`<text x="74" y="${y+15}" font-size="12.5" fill="#6A7689">${s[2]}</text>`;
+  });
+  return `<div class="dgm"><svg viewBox="0 0 720 380" role="img" aria-label="A new hire's first day touches all six towers in sequence">`
+   +`<line x1="44" y1="60" x2="44" y2="340" stroke="#E4E7EC" stroke-width="2"/>`+nodes
+   +`</svg><div class="cap">One hire, one day \u2014 the journey touches all six towers, and Directory Services is the foundation the rest read from.</div></div>`;
+}
+function svgMatrix(){
+  const towers=["Directory","Access","IGA","PAM","PKI","Proofing"];
+  const fns=[["Architecture and design",0],["Business analysis",1],["Engineering / build",1],["Testing / QA",1],
+             ["Project management",0],["Operations / run",0],["Audit and compliance",1],["Reporting and analytics",1]];
+  const x0=206, x1=700, cols=towers.length, cw=(x1-x0)/cols;
+  let head=`<text x="20" y="36" font-size="11" fill="#6A7689">Function \u2193 / Tower \u2192</text>`;
+  towers.forEach((t,i)=>{const cx=(x0+cw*(i+0.5)).toFixed(0);
+    head+=`<text x="${cx}" y="36" text-anchor="middle" font-size="12" font-weight="600" fill="#15233B">${t}</text>`;});
+  let rows="";
+  fns.forEach((f,i)=>{const top=46+34*i, hl=f[1]===1;
+    const fill=hl?"#EEF4FB":"#F3F5F8", stroke=hl?"#CFE0F1":"#E4E7EC", tcol=hl?"#1F3864":"#3A4A63", fw=hl?"600":"400";
+    rows+=`<rect x="20" y="${top}" width="180" height="30" rx="6" fill="${fill}" stroke="${stroke}"/>`
+      +`<text x="30" y="${top+15}" dominant-baseline="central" font-size="12.5" font-weight="${fw}" fill="${tcol}">${f[0]}</text>`
+      +`<rect x="${x0}" y="${top}" width="${x1-x0}" height="30" rx="6" fill="${fill}" stroke="${stroke}"/>`;
+  });
+  let divs="";
+  for(let k=1;k<cols;k++){const x=(x0+cw*k).toFixed(0);
+    divs+=`<line x1="${x}" y1="46" x2="${x}" y2="314" stroke="#E4E7EC" stroke-width="0.75" opacity="0.6"/>`;}
+  return `<div class="dgm"><svg viewBox="0 0 720 330" role="img" aria-label="Delivery functions run horizontally across every capability tower">`
+   +head+rows+divs
+   +`</svg><div class="cap">Towers are the \u201Cwhat\u201D (columns); delivery functions are the \u201Chow\u201D (rows). Highlighted rows are the disciplines most often seen as named IAM teams \u2014 each one works across every tower.</div></div>`;
+}
+
 const M0POINTS={
 "m0-1":{t:"What IAM is, and authentication vs authorization",pts:[
  "IAM is a discipline, not a product: the practice of managing digital identities and what they are allowed to do, across every application and system an organisation runs.",
@@ -255,7 +304,8 @@ const M0POINTS={
  "They stack and feed each other: Proofing verifies \u2192 Directory stores \u2192 IGA provisions birthright access \u2192 Access Management authenticates each day \u2192 PAM elevates when admin rights are needed \u2192 PKI secures machine-to-machine. One hire, one day, six towers.",
  "CIAM and ISPM are not towers: CIAM is an applied cross-tower domain (the same engines aimed at external users at scale); ISPM/ITDR/CIEM is a posture and threat layer that sits over the towers."],
  lens:"Map each requirement to a tower before you estimate \u2014 scope lives in the towers. A multi-tower RFP is never the sum of independent builds: the dependencies (directory before IGA, access management before CIAM) drive the sequencing in your phase plan and the integration effort between teams.",
- cue:"an RFP naming \u201CSailPoint + CyberArk + Entra\u201D is telling you IGA + PAM + Directory/Access Management are in scope and must integrate \u2014 that integration is itself a line of effort."},
+ cue:"an RFP naming \u201CSailPoint + CyberArk + Entra\u201D is telling you IGA + PAM + Directory/Access Management are in scope and must integrate \u2014 that integration is itself a line of effort.",
+ dgm:svgTowers()},
 "m0-4":{t:"The standards you must recognise in an RFP",pts:[
  "SAML 2.0 \u2014 XML-based federation for browser SSO; still dominant in enterprise app integrations.",
  "OIDC / OAuth 2.0 \u2014 modern token-based authentication (OIDC) and delegated authorization (OAuth); the default for APIs, mobile and SaaS.",
@@ -280,7 +330,8 @@ const M0POINTS={
  "So you never staff a tower in isolation \u2014 you staff the matrix. Your role-wise view is bands (seniority) \u00D7 functions (discipline); your phase-wise view is those same functions arranged over time.",
  "Two clarifications worth holding: Audit and Reporting each have two homes \u2014 a product capability (inside IGA/ISPM) and a delivery/run team. And identity analytics is a capability inside IGA/ISPM, distinct from the Business Analyst role."],
  lens:"Both your staffing plan and your effort defence come from this matrix. When a reviewer asks \u201Cwhy three BAs?\u201D you answer with discovery-phase BA load across the in-scope towers. Read tower names to size scope; read function and team names (engineering, testing, run, audit) to size delivery shape and run pricing.",
- cue:"an RFP asking for \u201CL1/L2/L3 support, onboarding, and audit evidence\u201D is describing run-side delivery functions \u2014 not new towers."},
+ cue:"an RFP asking for \u201CL1/L2/L3 support, onboarding, and audit evidence\u201D is describing run-side delivery functions \u2014 not new towers.",
+ dgm:svgMatrix()},
 };
 
 const MODULES=[
@@ -503,8 +554,8 @@ function buildNav(){
     const b=document.createElement("button");
     b.className="nav-item"; b.dataset.route="module"; b.dataset.mod=m.code;
     const done=modPct(m)===100;
-    b.innerHTML=`<span class="code">${m.code}</span> ${m.title.length>26?m.title.slice(0,25)+"\u2026":m.title}
-      ${done?'<span class="tick">\u2713</span>':(m.ready?'':'<span class="lock">\u25CB</span>')}`;
+    b.innerHTML=`<span class="code">${m.code}</span><span class="t">${m.title}</span>`
+      +`${done?'<span class="tick">\u2713</span>':(m.ready?'':'<span class="lock">\u25CB</span>')}`;
     b.onclick=()=>go("module",m.code);
     box.appendChild(b);
   });
@@ -580,6 +631,7 @@ function viewModule(m){
         </summary>
         <div class="body">
           <ul>${(p?p.pts:["Lesson content for this sub-topic unlocks when we cover it together."]).map(x=>`<li>${x}</li>`).join("")}</ul>
+          ${p&&p.dgm?p.dgm:''}
           ${p&&p.lens?`<div class="lens"><span class="lens-h">Solution Architect lens</span>${p.lens}</div>`:''}
           ${p&&p.cue?`<div class="cue"><b>In an RFP, listen for:</b> ${p.cue}</div>`:''}
         </div>
