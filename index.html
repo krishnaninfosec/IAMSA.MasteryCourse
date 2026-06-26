@@ -334,6 +334,95 @@ const M0POINTS={
  dgm:svgMatrix()},
 };
 
+/* ---------- M1 diagrams ---------- */
+function svgHybrid(){
+  const box=(x,y,w,h,t1,t2,hl)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="${hl?'#EEF4FB':'#F3F5F8'}" stroke="${hl?'#CFE0F1':'#E4E7EC'}"/>`
+    +`<text x="${x+w/2}" y="${y+20}" text-anchor="middle" font-size="12.5" font-weight="600" fill="#15233B">${t1}</text>`
+    +`<text x="${x+w/2}" y="${y+37}" text-anchor="middle" font-size="10.5" fill="#6A7689">${t2}</text>`;
+  const ar=(x1,y1,x2,y2,dash)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#6A7689" stroke-width="1.5" marker-end="url(#ah)" ${dash?'stroke-dasharray="4 3"':''}/>`;
+  return `<div class="dgm"><svg viewBox="0 0 720 300" role="img" aria-label="Hybrid identity: HR feeds Active Directory, which syncs to Microsoft Entra ID via Entra Connect; each side serves its own apps">`
+   +`<defs><marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#6A7689"/></marker></defs>`
+   +box(20,110,120,56,"HR system","source of truth")
+   +box(200,110,150,56,"Active Directory","on-prem \u00B7 LDAP/Kerberos",true)
+   +box(480,110,150,56,"Microsoft Entra ID","cloud \u00B7 OIDC/SAML",true)
+   +box(200,222,150,52,"Legacy / on-prem apps","LDAP \u00B7 Kerberos")
+   +box(480,222,150,52,"SaaS / web apps","SSO \u00B7 SAML/OIDC")
+   +`<text x="415" y="103" text-anchor="middle" font-size="10.5" fill="#2E6CA6" font-weight="600">Entra Connect (sync)</text>`
+   +ar(140,138,198,138)+ar(352,131,478,131)+ar(478,150,352,150,true)+ar(275,168,275,220)+ar(555,168,555,220)
+   +`</svg><div class="cap">Hybrid identity: HR is the source of truth, Active Directory holds the on-prem record, and Entra Connect syncs it to Entra ID (with optional write-back). Each side serves its own apps \u2014 most enterprises run both, not one or the other.</div></div>`;
+}
+function estM1(){
+  const rows=[
+   ["Discovery &amp; assessment \u2014 inventory, attribute-source mapping, data-quality assessment, app bindings","15"],
+   ["Design \u2014 target topology, sync rules, HA/DR, schema, security","12"],
+   ["Build &amp; setup \u2014 Entra Connect across Non-Prod + Prod","10"],
+   ["Sync rules &amp; attribute-flow implementation","8"],
+   ["Data remediation / cleanup workstream (driver: moderate quality)","15*"],
+   ["Directory-bound app assessment &amp; coexistence (25 apps \u00D7 ~0.5 pd)","12"],
+   ["Testing \u2014 SIT + UAT across two environments","12"],
+   ["Cutover &amp; hypercare","8"],
+  ];
+  const tr=rows.map(r=>`<tr><td style="padding:6px 10px;border-top:1px solid #EEF1F5">${r[0]}</td><td style="padding:6px 10px;border-top:1px solid #EEF1F5;text-align:right;white-space:nowrap">${r[1]}</td></tr>`).join("");
+  return `<div class="dgm"><div style="font-size:12.5px;color:#3A4A63;margin-bottom:10px"><b>Scenario:</b> M365 move \u2014 8,000 identities, 1 AD forest (2 domains) syncing to Entra ID, 25 directory-bound legacy apps, moderate data quality, Non-Prod + Prod.</div>`
+   +`<table style="width:100%;border-collapse:collapse;font-size:12.5px">`
+   +`<tr><th style="text-align:left;background:#1F3864;color:#fff;padding:7px 10px">Activity</th><th style="text-align:right;background:#1F3864;color:#fff;padding:7px 10px">Person-days</th></tr>`
+   +tr
+   +`<tr><td style="padding:7px 10px;border-top:2px solid #1F3864;font-weight:600">Subtotal</td><td style="padding:7px 10px;border-top:2px solid #1F3864;text-align:right;font-weight:600">~92</td></tr>`
+   +`<tr><td style="padding:6px 10px">+ PM / governance (~15%)</td><td style="padding:6px 10px;text-align:right">~14</td></tr>`
+   +`<tr><td style="padding:7px 10px;font-weight:700;color:#1F3864">Estimate</td><td style="padding:7px 10px;text-align:right;font-weight:700;color:#1F3864">~105\u2013110 pd</td></tr>`
+   +`</table>`
+   +`<div class="cap" style="text-align:left">* Data remediation is the variable line \u2014 poor data quality could add 10\u201320 pd. Role split \u2248 SA/Lead 20% \u00B7 Senior Engineer 35% \u00B7 Engineer 30% \u00B7 Analyst/offshore 15%, phased over ~10\u201312 weeks. The number you defend is the assumption set (8k identities, 25 bound apps, moderate data quality, two environments) \u2014 not the total.</div></div>`;
+}
+
+const M1POINTS={
+"m1-1":{t:"Directory concepts and the identity data model",pts:[
+ "A directory is the authoritative store of identities and their attributes \u2014 the \u201Cwho exists and what's true about them\u201D that every other tower reads.",
+ "Core objects: users, groups, devices and service accounts, organised in a hierarchy (organisational units in AD) with a schema that defines the allowed attributes.",
+ "Identity data has a source of truth per attribute \u2014 HR usually owns name/department/manager; the directory owns sign-in attributes; the mail system owns email. Mapping that ownership is the heart of directory design.",
+ "Attributes drive everything downstream: birthright access (IGA) keys off department/role/location; access policies (Access Management) key off group membership and attributes \u2014 so attribute quality caps automation everywhere above.",
+ "LDAP is the query/modify protocol; AD adds Kerberos and NTLM for Windows authentication on top."],
+ lens:"Before counting servers, map the attribute flow \u2014 which system is authoritative for which attribute, and how clean is it. A directory project's effort is dominated less by \u201Cstand up a directory\u201D and more by \u201Creconcile messy, multi-owner attribute data into one trustworthy model.\u201D",
+ cue:"\u201Cmultiple HR systems\u201D, \u201Cattributes don't match\u201D, \u201Cno single source of truth\u201D, \u201Cduplicate accounts\u201D \u2014 all signal data-reconciliation effort."},
+"m1-2":{t:"Active Directory vs Microsoft Entra ID",pts:[
+ "Active Directory Domain Services (AD DS): on-prem, hierarchical (forest \u2192 domain \u2192 OU), uses LDAP + Kerberos/NTLM; built for Windows networks, Group Policy, file/print and on-prem app authentication.",
+ "Microsoft Entra ID (formerly Azure AD): a cloud identity service with a flat structure that speaks modern protocols (OIDC, OAuth, SAML, SCIM); built for SaaS/web/mobile SSO, MFA and Conditional Access.",
+ "They are different services, not versions of each other. AD does domain join, GPO and Kerberos; Entra does cloud SSO, MFA and Conditional Access. Most enterprises run both (hybrid) and synchronise.",
+ "Entra Connect (Connect Sync, or the lighter Cloud Sync) replicates identities and attributes from AD to Entra ID, with sign-in via password-hash sync, pass-through authentication, or federation."],
+ lens:"\u201CMove to Entra ID\u201D rarely means \u201Cdecommission AD.\u201D Clarify whether AD must stay for domain-joined devices, GPO and legacy app authentication \u2014 because if it does, you're scoping hybrid identity (sync + coexistence), not a migration. That single distinction swings the estimate materially.",
+ cue:"\u201CAzure AD\u201D (use the current name, Entra ID), \u201Cdomain-joined\u201D, \u201CGPO\u201D, \u201Ccloud-only vs hybrid\u201D, \u201Cdecommission AD\u201D."},
+"m1-3":{t:"Sync, consolidation and the virtual directory",pts:[
+ "Sync keeps two or more directories consistent: define the source of truth, the attribute-flow direction, and whether write-back is needed (e.g. Entra \u2192 AD password write-back).",
+ "Consolidation (M&A, multiple forests) merges or rationalises directories into a target. Three patterns: migrate-and-merge, establish trusts, or front everything with a virtual directory.",
+ "A virtual directory / identity data fabric (e.g. Radiant Logic) presents many sources as one logical directory without physically migrating \u2014 fast for messy or post-acquisition estates, and it avoids a risky big-bang migration.",
+ "The two-environment rule applies here too: schema and sync-rule changes are built and verified in Non-Production before Production."],
+ dgm:svgHybrid(),
+ lens:"The number of directories/forests to reconcile and the chosen consolidation pattern (migrate vs trust vs virtualise) is the dominant build driver. A virtual directory can collapse a multi-quarter migration into weeks \u2014 a strong differentiator when an RFP describes a messy, post-acquisition estate.",
+ cue:"\u201Ctwo forests\u201D, \u201Cpost-merger\u201D, \u201Csingle view of identity\u201D, \u201Ccan't migrate yet\u201D, \u201Ctrust relationships\u201D."},
+"m1-4":{t:"SI & Transform \u2014 lifecycle and effort drivers",pts:[
+ "Project types: hybrid sync setup, consolidation/migration, directory cleanup/remediation, upgrade (true greenfield is rare).",
+ "Phases follow the standard spine: Discovery (inventory directories, objects, attribute sources, app bindings) \u2192 Design (target topology, sync rules, HA/DR, schema) \u2192 Build (across Non-Prod + Prod) \u2192 sync/migration use cases \u2192 SIT/UAT \u2192 cutover \u2192 hypercare.",
+ "Effort drivers: number of directories/forests/domains; object counts; attribute-mapping complexity; number of directory-bound apps (LDAP/Kerberos) to re-point or coexist; HA/DR topology.",
+ "Data quality is the dominant swing factor \u2014 dirty HR feeds and stale objects inflate every phase, so budget a cleanup workstream explicitly."],
+ lens:"Two numbers anchor the estimate \u2014 directories/forests to integrate and directory-bound apps to handle \u2014 but the multiplier is data quality. Always price a discovery/assessment slice up front; committing to a fixed directory price before assessing data quality is how teams lose money.",
+ cue:"\u201Ctight timeline\u201D, \u201Cfixed price\u201D, \u201Cwe think the data is fine\u201D, \u201Clegacy apps on LDAP\u201D \u2014 assess before committing."},
+"m1-5":{t:"Run / BAU, automation & licensing",pts:[
+ "Run / BAU: object lifecycle (create/move/disable), group management, sync monitoring and break-fix, stale/orphaned-object cleanup, schema changes, replication and directory-health monitoring, DR tests.",
+ "Tiering: L1 \u2014 account unlocks, group-membership requests; L2 \u2014 sync errors, object fixes, standard changes; L3 \u2014 schema/topology changes, replication issues, complex break-fix.",
+ "Automation & AI: automated stale/orphan detection and cleanup; group lifecycle automation; sync-health monitoring with alerting; attribute-quality dashboards; and, with IGA, automated JML driving directory object lifecycle.",
+ "Licensing: AD DS is bundled with Windows Server (CALs + infra/run cost); Entra ID is tiered \u2014 Free / P1 / P2. P1 adds Conditional Access and group-based licensing; P2 adds Identity Protection and PIM."],
+ lens:"In Run, the recurring volume is object lifecycle and sync health \u2014 most of it automatable \u2014 so the run story should show volume reduction (self-service groups, automated cleanup) as both a cost lever and a quality benefit. On licensing, don't over-buy P2 for everyone; map the tier features to the populations that actually need them.",
+ cue:"\u201Cmanual group management\u201D, \u201Csync keeps breaking\u201D, \u201Cstale accounts\u201D, \u201Cwhat Entra tier do we need\u201D."},
+"m1-6":{t:"Worked estimation example",pts:[
+ "Work it bottom-up from the standard phase spine, then sanity-check parametrically (identities, bound apps).",
+ "The drivers do the work: 8,000 identities, 1 forest / 2 domains, 25 directory-bound apps, moderate data quality, two environments.",
+ "Carry data remediation as an explicit, re-priceable line \u2014 it's the margin-protecting assumption.",
+ "Trace it: Requirement (M365 move, hybrid) \u2192 scope (hybrid sync + app assessment) \u2192 activities \u2192 drivers \u2192 effort (~105\u2013110 pd) \u2192 role split \u2192 cost \u2192 ~10\u201312-week phase plan."],
+ dgm:estM1(),
+ lens:"The number you defend is the assumption set, not the total. Lead with the drivers and show how each maps to person-days; when challenged, you adjust a driver, not a gut number. The data-quality line is where you protect margin \u2014 make it explicit and re-priceable.",
+ cue:"\u201Cfixed price before assessment\u201D \u2014 carry the data-quality assumption as a documented, re-priceable risk rather than absorbing it."},
+};
+Object.assign(M0POINTS, M1POINTS);
+
 const MODULES=[
  {code:"M0",title:"Foundations & IAM operating model",hrs:3,ready:true,
   outcome:"Speak the language; map any requirement to a tower.",
@@ -347,8 +436,10 @@ const MODULES=[
    {id:"m0-5",t:"NIST 800-63 assurance levels (IAL/AAL/FAL)"},
    {id:"m0-6",t:"Capability towers vs delivery functions (the matrix)"},
   ]},
- {code:"M1",title:"Directory Services",hrs:4,ready:false,
+ {code:"M1",title:"Directory Services",hrs:4,ready:true,
   outcome:"Design the identity foundation and sync/consolidation approach.",
+  lead:"The identity foundation. Before you can govern, authenticate or vault anything, you need one trustworthy answer to \u201Cwho exists, and what's true about them?\u201D This module designs that foundation and the sync/consolidation approach \u2014 and it's where data quality quietly decides the cost of every tower above it.",
+  reflection:"Given an RFP line \u2014 \u201Cwe're moving to Microsoft 365, we have two AD forests from an acquisition, and 400 apps still authenticating against AD via LDAP/Kerberos\u201D \u2014 sketch the target directory topology, name the consolidation pattern you'd propose, identify the single biggest effort driver, and state the first discovery question you'd ask. If that comes easily, M1 has landed.",
   subs:[{id:"m1-1",t:"Directory concepts and data model"},{id:"m1-2",t:"Active Directory vs Microsoft Entra ID"},
    {id:"m1-3",t:"Sync, consolidation and virtual directory"},{id:"m1-4",t:"SI & Transform: lifecycle and effort drivers"},
    {id:"m1-5",t:"Run / BAU, automation & licensing"},{id:"m1-6",t:"Worked estimation example"}]},
@@ -508,16 +599,36 @@ const FLASHCARDS=[
  ["M4","Typical PAM licensing basis?","Often per managed/privileged account or per vaulted credential, sometimes per target or session; secrets and workload identity may be priced separately."],
  ["M4","PAM vs EPM \u2014 how do they relate?","Both are privileged access. PAM secures privileged accounts, secrets and server sessions (the \u201Ckeys to the kingdom\u201D); EPM removes local admin and elevates per-app across the endpoint estate. Complementary."],
  ["M4","A key automation / AI lever in PAM?","Automated account discovery and onboarding, automatic credential rotation, and anomaly detection that flags risky privileged sessions."],
+
+ ["M1","Are AD DS and Microsoft Entra ID versions of the same thing?","No \u2014 different services. AD does domain join, GPO and Kerberos (on-prem Windows); Entra does cloud SSO, MFA and Conditional Access (modern protocols). Most enterprises run both, synced."],
+ ["M1","What does Entra Connect do, and name a sign-in option?","Syncs identities and attributes from AD to Entra ID; sign-in via password-hash sync, pass-through authentication, or federation."],
+ ["M1","What is the \u201Csource of truth\u201D in directory design?","The system authoritative for a given attribute (HR owns department/manager; the directory owns sign-in attributes). Mapping attribute ownership is the heart of the design."],
+ ["M1","Dominant swing factor in a directory estimate?","Source-data quality \u2014 dirty HR feeds and stale objects inflate every phase, so budget a cleanup workstream explicitly."],
+ ["M1","When is a virtual directory the right call?","Messy or post-M&A estates needing one logical view fast, without a risky big-bang migration (e.g. Radiant Logic)."],
+ ["M1","Entra ID licensing \u2014 what do P1 and P2 add?","P1 adds Conditional Access and group-based licensing; P2 adds Identity Protection and PIM. Map tiers to the populations that need them."],
+ ["M1","Two numbers that anchor a directory estimate?","Number of directories/forests to integrate and number of directory-bound (LDAP/Kerberos) apps \u2014 multiplied by data quality."],
+ ["M1","Does \u201Cmove to Entra ID\u201D mean decommissioning AD?","Usually not \u2014 if domain-joined devices, GPO or legacy app auth remain, you're scoping hybrid coexistence, not a migration."],
 ].map((c,i)=>({id:"fc"+i,mod:c[0],q:c[1],a:c[2]}));
 
-const QUIZ=[
+const QUIZZES={
+"M0":[
  {q:"Which is the single most common audit finding in the identity lifecycle?",o:["Joiner given access a day late","Mover keeps a stale entitlement","Leaver access not revoked promptly","MFA not enforced on one app"],c:2},
  {q:"Which tower is the foundation the others read from?",o:["IGA","Access Management","Directory Services","PAM"],c:2},
  {q:"What is the biggest single effort driver in an Access Management or IGA estimate?",o:["Number of help-desk agents","Number and protocol-type of application integrations","Choice of cloud provider","Brand of MFA token"],c:1},
  {q:"CIAM is best described as...",o:["A seventh capability tower","An applied cross-tower domain for external identities","A licensing model","A type of directory"],c:1},
  {q:"Engineering, Testing, Business Analysis, Audit and Reporting are...",o:["Capability towers","Delivery functions that cut across every tower","Run-only activities","NIST assurance levels"],c:1},
  {q:"IAL, AAL and FAL are defined by which standard?",o:["ISO 27001","SAML 2.0","NIST SP 800-63","PCI-DSS"],c:2},
-];
+],
+"M1":[
+ {q:"What is the source of truth in directory design?",o:["The newest server","The system authoritative for a given attribute","The vendor's default schema","Whichever directory has most users"],c:1},
+ {q:"Are AD DS and Microsoft Entra ID versions of the same thing?",o:["Yes \u2014 Entra ID is just cloud AD","No \u2014 different services; AD does domain join/GPO/Kerberos, Entra does cloud SSO/MFA","Yes \u2014 one replaced the other","No \u2014 Entra ID is only for guests"],c:1},
+ {q:"What is the dominant swing factor in a directory estimate?",o:["The brand of directory","Source-data quality","The number of help-desk staff","Time zone coverage"],c:1},
+ {q:"When is a virtual directory (e.g. Radiant Logic) the strong play?",o:["Single clean directory, cloud-only","Messy or post-M&A estate needing one logical view without a big-bang migration","When you have no HR system","Only for certificate management"],c:1},
+ {q:"What does Entra Connect do?",o:["Issues certificates","Syncs identities/attributes from AD to Entra ID","Replaces Active Directory","Runs Conditional Access policies"],c:1},
+ {q:"\u201CMove to Entra ID\u201D most often means...",o:["Decommission AD immediately","Hybrid coexistence \u2014 AD usually stays for domain join, GPO and legacy auth","Stop using MFA","Migrate all apps to LDAP"],c:1},
+],
+};
+let activeQuiz=[];
 
 /* ---------- state ---------- */
 let progress=Store.get("iam_progress",{});      // subId -> true
@@ -638,7 +749,7 @@ function viewModule(m){
       </details>`}).join("")}
     <div class="toolbar">
       <button class="cta amber" onclick="go('flash')">Study this module's cards</button>
-      <button class="cta ghost" onclick="go('quiz','${m.code}')">Take the quick check</button>
+      ${QUIZZES[m.code]?`<button class="cta ghost" onclick="go('quiz','${m.code}')">Take the quick check</button>`:''}
     </div>
     ${m.reflection?`<div class="reflect"><span class="lens-h">Reflection</span><p>${m.reflection}</p></div>`:''}`
   :`
@@ -715,11 +826,12 @@ function rate(grade){
 
 /* quiz */
 function viewQuiz(m){
+  activeQuiz = QUIZZES[m?m.code:'M0'] || QUIZZES['M0'];
   return `<div class="quiz">
     <div class="crumb"><span class="eyebrow">${m?m.code:'M0'} \u00B7 quick check</span></div>
     <h1>Quick check</h1>
     <p class="lead">No score is saved or judged \u2014 this is retrieval practice. Getting one wrong and seeing why is how it sticks.</p>
-    ${QUIZ.map((q,i)=>`<div class="qitem" data-q="${i}">
+    ${activeQuiz.map((q,i)=>`<div class="qitem" data-q="${i}">
       <div class="q">${i+1}. ${q.q}</div>
       ${q.o.map((o,j)=>`<button class="opt" data-i="${i}" data-j="${j}">${o}<span class="fb"></span></button>`).join("")}
     </div>`).join("")}
@@ -791,7 +903,7 @@ function bindView(){
   });
   document.querySelectorAll('.opt').forEach(o=>{
     o.onclick=()=>{
-      const qi=+o.dataset.i, correct=QUIZ[qi].c, chosen=+o.dataset.j;
+      const qi=+o.dataset.i, correct=activeQuiz[qi].c, chosen=+o.dataset.j;
       const item=document.querySelector(`.qitem[data-q="${qi}"]`);
       if(item.dataset.done) return; item.dataset.done="1";
       item.querySelectorAll('.opt').forEach(b=>{
